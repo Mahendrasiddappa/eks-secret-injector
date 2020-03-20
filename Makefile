@@ -5,16 +5,17 @@ PODS_WEBHOOK_ENDPOINT:=${APIGATEWAY_ENDPOINT}/pods
 
 .PHONY: build buildsecrets buildpods up installwebhooks deploy destroy status
 
-build: buildsecrets buildpods
+build: buildsecrets 
+#buildpods
 
 buildsecrets:
-	GOOS=linux GOARCH=amd64 go build -v -ldflags '-d -s -w' -a -tags netgo -installsuffix netgo -o bin/secrets ./secrets/webhook
+	GOOS=linux GOARCH=amd64 go build -v -ldflags ' -s -w' -a -tags netgo -o bin/secrets ./secrets/webhook
 
 buildpods:
-	GOOS=linux GOARCH=amd64 go build -v -ldflags '-d -s -w' -a -tags netgo -installsuffix netgo -o bin/pods ./pods/webhook
+	GOOS=linux GOARCH=amd64 go build -v -ldflags ' -s -w' -a -tags netgo -installsuffix netgo -o bin/pods ./pods/webhook
 
 up: 
-	sam package --template-file template.yaml --output-template-file current-stack.yaml --s3-bucket ${WEBHOOK_BUCKET}
+	sam package --template-file template.yaml --output-template-file current-stack.yaml --s3-bucket mah-webhook-demo
 	sam deploy --template-file current-stack.yaml --stack-name nasewebhook --capabilities CAPABILITY_IAM
 
 installwebhooks:
@@ -22,8 +23,8 @@ installwebhooks:
 	@sed 's|API_GATEWAY_WEBHOOK_URL|${SECRETS_WEBHOOK_ENDPOINT}|g' secrets/webhook-config-template.yaml > secrets/webhook-config.yaml
 	@sed 's|API_GATEWAY_WEBHOOK_URL|${PODS_WEBHOOK_ENDPOINT}|g' pods/webhook-config-template.yaml > pods/webhook-config.yaml
 	@echo Registering webhooks
-	kubectl apply -f secrets/webhook-config.yaml
-	kubectl apply -f pods/webhook-config.yaml
+	k apply -f secrets/webhook-config.yaml
+	k apply -f pods/webhook-config.yaml
 
 deploy: build up installwebhooks
 
