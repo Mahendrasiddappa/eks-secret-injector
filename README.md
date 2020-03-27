@@ -1,6 +1,6 @@
 # Native Secrets 
 
-This repo is a proof-of-concept (PoC) showing how native Kubernetes secrets can be support via AWS Secrets Manager. The basic idea of the PoC is to use an extension point of the Kubernetes API server called [dynamic admission control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/): when a user creates a secret, a mutating Webhook (implemented as an AWS Lambda function) intercepts the process of persisting the payload into `etcd` and replaces it with the ARN of a secret managed by the [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/).
+This repo is a proof-of-concept (PoC) showing how to inject AWS secret manager secrets to pods. The basic idea of the PoC is to use an extension point of the Kubernetes API server called [dynamic admission control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/): when a user creates a pod with annotations, a mutating Webhook (implemented as an AWS Lambda function) intercepts the process and adds a init container to the pod which will read the secrets from secrets manager and injects the secrets to main container through a shared volume.
 
 ## Installation
 
