@@ -1,4 +1,3 @@
-WEBHOOK_BUCKET?=nase-webhook
 APIGATEWAY_ENDPOINT:=$(shell aws cloudformation describe-stacks --stack-name nasewebhook --query "Stacks[0].Outputs[?OutputKey=='WebhookEndpoint'].OutputValue" --output text)
 SECRETS_WEBHOOK_ENDPOINT:=${APIGATEWAY_ENDPOINT}/secrets
 PODS_WEBHOOK_ENDPOINT:=${APIGATEWAY_ENDPOINT}/pods
