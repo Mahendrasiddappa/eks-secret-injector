@@ -196,6 +196,7 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                initref[0].VolumeMounts = append(initref[0].VolumeMounts, initVolumeMount)
 
                //Add Environment Vars
+<<<<<<< HEAD
                annotations := secret.ObjectMeta.GetAnnotations()
                fmt.Println("printing annotations:", annotations)
                var initEnv1, initEnv2 v1.EnvVar
@@ -207,6 +208,12 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                  initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: annotations[awsSecretsKey]} 
                  initref[0].Env = append(initref[0].Env, initEnv2)
                }
+=======
+               var initEnv1 = v1.EnvVar{Name: "AWS_REGION", Value: "us-east-1"}
+               var initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: "PodSecret"} 
+               initref[0].Env = append(initref[0].Env, initEnv1)
+               initref[0].Env = append(initref[0].Env, initEnv2)
+>>>>>>> 435e6404e861760bb1ce5f7f3e9fa665ec33aec0
  
                //Changing the Pod
                secret.Spec.Volumes = append(secret.Spec.Volumes, initVolumes[0])

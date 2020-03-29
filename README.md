@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 # Native Secrets 
 
 This repo is a proof-of-concept (PoC) showing how native Kubernetes secrets can be support via AWS Secrets Manager. The basic idea of the PoC is to use an extension point of the Kubernetes API server called [dynamic admission control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/): when a user creates a secret, a mutating Webhook (implemented as an AWS Lambda function) intercepts the process of persisting the payload into `etcd` and replaces it with the ARN of a secret managed by the [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/).
+=======
+# AWS EKS Secrets injector 
+
+This repo is a proof-of-concept (PoC) showing how to inject AWS secret manager secrets to pods. The basic idea of the PoC is to use an extension point of the Kubernetes API server called [dynamic admission control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/): when a user creates a pod with annotations, a mutating Webhook (implemented as an AWS Lambda function) intercepts the process and adds a init container to the pod which will read the secrets from secrets manager and injects the secrets to main container through a shared volume.
+>>>>>>> 435e6404e861760bb1ce5f7f3e9fa665ec33aec0
 
 ## Installation
 
@@ -30,6 +36,7 @@ Now, to install the webhook, execute:
 make deploy
 ``` 
 
+<<<<<<< HEAD
 To verify if all went well, compare the output of the following command with your own output:
 
 ```sh
@@ -88,3 +95,11 @@ secret/somesecret created
 $ kubectl get secret somesecret -o "jsonpath={.data['nase']}" | base64 -D
 arn:aws:secretsmanager:us-west-2:123456789012:secret:.nase-dzWHWN
 ```
+=======
+## Usage
+
+```sh
+$ kubectl create -f pod2.yml
+
+```
+>>>>>>> 435e6404e861760bb1ce5f7f3e9fa665ec33aec0
