@@ -14,7 +14,7 @@ buildpods:
 	GOOS=linux GOARCH=amd64 go build -v -ldflags ' -s -w' -a -tags netgo -installsuffix netgo -o bin/pods ./pods/webhook
 
 up: 
-	sam package --template-file template.yaml --output-template-file current-stack.yaml --s3-bucket mah-webhook-demo
+	sam package --template-file template.yaml --output-template-file current-stack.yaml --s3-bucket ${WEBHOOK_BUCKET}
 	sam package --template-file template.yaml --output-template-file current-stack.yaml --s3-bucket ${WEBHOOK_BUCKET}
 	sam deploy --template-file current-stack.yaml --stack-name nasewebhook --capabilities CAPABILITY_IAM
 
