@@ -1,15 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-<<<<<<< HEAD
   name: myapp-pod2
   annotations:
     aws.secrets-key: podsecret
     aws.secrets-region: us-east-2
-=======
-  name: myapp-pod
-  annotations:
->>>>>>> 435e6404e861760bb1ce5f7f3e9fa665ec33aec0
     aws-secrets-inject: "true"
   labels:
     app: myapp
