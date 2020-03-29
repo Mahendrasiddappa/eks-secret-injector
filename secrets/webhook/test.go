@@ -207,10 +207,6 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                  initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: annotations[awsSecretsKey]} 
                  initref[0].Env = append(initref[0].Env, initEnv2)
                }
-               var initEnv1 = v1.EnvVar{Name: "AWS_REGION", Value: "us-east-1"}
-               var initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: "PodSecret"} 
-               initref[0].Env = append(initref[0].Env, initEnv1)
-               initref[0].Env = append(initref[0].Env, initEnv2)
  
                //Changing the Pod
                secret.Spec.Volumes = append(secret.Spec.Volumes, initVolumes[0])
