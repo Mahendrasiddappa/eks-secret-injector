@@ -70,21 +70,6 @@ func genCodec() serializer.CodecFactory {
 	return codecs
 }
 
-func createSecret(namespace, name, payload string) (string, error) {
-	svc := secretsmanager.New(session.New())
-	input := &secretsmanager.CreateSecretInput{
-		Description:  aws.String("A native secret managed by the NaSe Webhook"),
-		Name:         aws.String(fmt.Sprintf("%v.%v", namespace, name)),
-		SecretString: aws.String(payload),
-	}
-	result, err := svc.CreateSecret(input)
-	if err != nil {
-		return "", err
-	}
-	return *result.ARN, nil
-}
-
-
 
 func mutationRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
 	// skip special kubernete system namespaces
@@ -161,9 +146,6 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
 	       // determine whether to perform mutation
 	       if !mutationRequired(ignoredNamespaces, &secret.ObjectMeta) {
 	         	fmt.Println("Skipping mutation for %s/%s due to policy check", secret.Namespace, secret.Name)
-	        	//return admissionv1beta1.AdmissionResponse {
-		        //	Allowed: true, 
-		        //}
                          review.Response.Result = &metav1.Status{
                                  Message: "Skipping mutation",
                                  Status:  metav1.StatusFailure,
@@ -176,8 +158,7 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                  Image: "jicowan/jicowan_aws-secrets-manager:v0.3",
                },
                }
-              
-               secret.Spec.InitContainers = initref 
+               secret.Spec.InitContainers = initref
                fmt.Println("DEBUG:: POD\n%v\n", secret.Spec.InitContainers)
 
 
@@ -204,20 +185,18 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                  initref[0].Env = append(initref[0].Env, initEnv1)
                }
                if annotations[awsSecretsKey] != "" {
-                 initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: annotations[awsSecretsKey]} 
+                 initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: annotations[awsSecretsKey]}
                  initref[0].Env = append(initref[0].Env, initEnv2)
                }
- 
+
                //Changing the Pod
                secret.Spec.Volumes = append(secret.Spec.Volumes, initVolumes[0])
                secret.Spec.Containers[0].VolumeMounts = append(secret.Spec.Containers[0].VolumeMounts, initVolumeMount)
-               secret.Spec.InitContainers = initref 
-                
-               
+               secret.Spec.InitContainers = initref
 
 
                bs, err = json.Marshal(secret)
-	default:  
+	default:
                fmt.Println("Entered Default Switch")
 		review.Response.Result = &metav1.Status{
 			Message: fmt.Sprintf("Unexpected type %T", review.Request.Object.Object),
@@ -227,7 +206,7 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
 	}
 	ops, err := jsonpatch.CreatePatch(original, bs)
 
-        fmt.Println("Test Output")	
+        fmt.Println("Test Output")
         fmt.Println(ops)
         fmt.Println("Done Printing ops")
         if err != nil {

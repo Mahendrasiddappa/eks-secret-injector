@@ -33,6 +33,6 @@ make deploy
 ## Usage
 
 ```sh
-$ kubectl create -f pod2.yml
+$ kubectl create -f pod.yml
 
 ```

@@ -1,4 +1,4 @@
-module github.com/mhausenblas/nase
+module github.com/Mahendrasiddappa/eks-secret-injector
 
 go 1.13
 
