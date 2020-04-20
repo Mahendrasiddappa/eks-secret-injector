@@ -16,9 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
 )
 
 const (
@@ -84,28 +81,41 @@ func mutationRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
 	if annotations == nil {
 		annotations = map[string]string{}
 	}
-        fmt.Println("req 1")
 	status := annotations[awsSecretsInjectStatus]
-	fmt.Println("req 2")
 	// determine whether to perform mutation based on annotation for the target resource
 	var required bool
 	if strings.ToLower(status) == "injected" {
 		required = false;
-                fmt.Println("req 3")
 	} else {
-                fmt.Println("req 4")
 		switch strings.ToLower(annotations[awsSecretsInject]) {
 		default:
-                        fmt.Println("req 5")
 			required = false
 		case "y", "yes", "true", "on":
 			required = true
 		}
 	}
-	fmt.Println("req 6")
 	fmt.Println("Mutation policy for %v/%v: status: %q required:%v", metadata.Namespace, metadata.Name, status, required)
 
 	return required
+}
+
+
+func addVolume(initCont []v1.Container, pod *v1.Pod) {
+   var initVolumes = []v1.Volume{
+               v1.Volume{
+                  VolumeSource: v1.VolumeSource{
+                  EmptyDir: new(v1.EmptyDirVolumeSource),
+                  },
+                  Name: "secretmanager-secret",
+                 },
+                }
+
+     // Add mount Path
+     var initVolumeMount = v1.VolumeMount{Name: "secretmanager-secret", MountPath:"/tmp"}
+     initCont[0].VolumeMounts = append(initCont[0].VolumeMounts, initVolumeMount)
+     pod.Spec.Volumes = append(pod.Spec.Volumes, initVolumes[0])
+     pod.Spec.Containers[0].VolumeMounts = append(pod.Spec.Containers[0].VolumeMounts, initVolumeMount)
+
 }
 
 
@@ -161,9 +171,9 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                secret.Spec.InitContainers = initref
                fmt.Println("DEBUG:: POD\n%v\n", secret.Spec.InitContainers)
 
-
+               addVolume(initref, secret)
                // Adding volume
-               var initVolumes = []v1.Volume{
+         /*      var initVolumes = []v1.Volume{
                v1.Volume{
                   VolumeSource: v1.VolumeSource{
                   EmptyDir: new(v1.EmptyDirVolumeSource),
@@ -175,7 +185,7 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                // Add mount Path
                var initVolumeMount = v1.VolumeMount{Name: "secretmanager-secret", MountPath:"/tmp"}
                initref[0].VolumeMounts = append(initref[0].VolumeMounts, initVolumeMount)
-
+*/
                //Add Environment Vars
                annotations := secret.ObjectMeta.GetAnnotations()
                fmt.Println("printing annotations:", annotations)
@@ -190,8 +200,8 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                }
 
                //Changing the Pod
-               secret.Spec.Volumes = append(secret.Spec.Volumes, initVolumes[0])
-               secret.Spec.Containers[0].VolumeMounts = append(secret.Spec.Containers[0].VolumeMounts, initVolumeMount)
+  //             secret.Spec.Volumes = append(secret.Spec.Volumes, initVolumes[0])
+  //             secret.Spec.Containers[0].VolumeMounts = append(secret.Spec.Containers[0].VolumeMounts, initVolumeMount)
                secret.Spec.InitContainers = initref
 
 
