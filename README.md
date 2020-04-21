@@ -30,6 +30,11 @@ Now, to install the webhook, execute:
 make deploy
 ``` 
 
+Notes:
+
+The CA bundle used in the webhook config comes from Amazon Trust Services.
+This is a PoC, not a production-ready setup. In order to lock down the webhook, that is, make sure that it can only be called from your Kubernetes cluster, you'd need to restrict the API Gateway access to its VPC.
+
 ## Usage
 
 ```sh

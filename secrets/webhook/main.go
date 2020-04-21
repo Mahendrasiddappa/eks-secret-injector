@@ -118,6 +118,20 @@ func addVolume(initCont []v1.Container, pod *v1.Pod) {
 
 }
 
+func addEnvVar(initCont []v1.Container, pod *v1.Pod) {
+	annotations := pod.ObjectMeta.GetAnnotations()
+	fmt.Println("printing annotations:", annotations)
+	var initEnv1, initEnv2 v1.EnvVar
+	if annotations[awsSecretsRegion] != "" {
+	  initEnv1 = v1.EnvVar{Name: "AWS_REGION", Value: annotations[awsSecretsRegion]}
+	  initCont[0].Env = append(initCont[0].Env, initEnv1)
+	}
+	if annotations[awsSecretsKey] != "" {
+	  initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: annotations[awsSecretsKey]}
+	  initCont[0].Env = append(initCont[0].Env, initEnv2)
+	}
+}
+
 
 func mutate(body string) (events.APIGatewayProxyResponse, error) {
         codecs := genCodec()
@@ -170,41 +184,14 @@ func mutate(body string) (events.APIGatewayProxyResponse, error) {
                }
                secret.Spec.InitContainers = initref
                fmt.Println("DEBUG:: POD\n%v\n", secret.Spec.InitContainers)
+			   
+			   // Add volume to mount the secrets
+			   addVolume(initref, secret)
 
-               addVolume(initref, secret)
-               // Adding volume
-         /*      var initVolumes = []v1.Volume{
-               v1.Volume{
-                  VolumeSource: v1.VolumeSource{
-                  EmptyDir: new(v1.EmptyDirVolumeSource),
-                  },
-                  Name: "secretmanager-secret",
-                 },
-                }
-
-               // Add mount Path
-               var initVolumeMount = v1.VolumeMount{Name: "secretmanager-secret", MountPath:"/tmp"}
-               initref[0].VolumeMounts = append(initref[0].VolumeMounts, initVolumeMount)
-*/
-               //Add Environment Vars
-               annotations := secret.ObjectMeta.GetAnnotations()
-               fmt.Println("printing annotations:", annotations)
-               var initEnv1, initEnv2 v1.EnvVar
-               if annotations[awsSecretsRegion] != "" {
-                 initEnv1 = v1.EnvVar{Name: "AWS_REGION", Value: annotations[awsSecretsRegion]}
-                 initref[0].Env = append(initref[0].Env, initEnv1)
-               }
-               if annotations[awsSecretsKey] != "" {
-                 initEnv2 = v1.EnvVar{Name: "SECRET_NAME", Value: annotations[awsSecretsKey]}
-                 initref[0].Env = append(initref[0].Env, initEnv2)
-               }
-
-               //Changing the Pod
-  //             secret.Spec.Volumes = append(secret.Spec.Volumes, initVolumes[0])
-  //             secret.Spec.Containers[0].VolumeMounts = append(secret.Spec.Containers[0].VolumeMounts, initVolumeMount)
-               secret.Spec.InitContainers = initref
-
-
+			   // Add environment variables to init container to read the secrets
+			   addEnvVar(initref, secret)
+			   
+			   secret.Spec.InitContainers = initref
                bs, err = json.Marshal(secret)
 	default:
                fmt.Println("Entered Default Switch")
